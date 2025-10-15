@@ -93,55 +93,73 @@ public:
 	double s(double T, double muB, double muQ, double muS)
 	{
     double cp = c*T0*T0*T0*T0;  // c dimensionless, cp - 1/fm^4
-		return 4.0*cp*T*T*T/(T0*T0*T0*T0);
+    double sumBSQ = cB*(muB/muB0)*(muB/muB0) 
+                  + cS*(muS/muS0)*(muS/muS0) 
+                  + cQ*(muQ/muQ0)*(muQ/muQ0);
+		return cp*(4.0*T*T*T/(T0*T0*T0*T0) + 2.0*T*sumBSQ/(T0*T0));
 	}
 
 	double B(double T, double muB, double muQ, double muS)
 	{
     double cp = c*T0*T0*T0*T0;  // c dimensionless, cp - 1/fm^4
-		return 4.0*cp*muB*muB*muB/(muB0*muB0*muB0*muB0);
+		return cp*(4.0*muB*muB*muB/(muB0*muB0*muB0*muB0) + (2.0*muB/(muB0*muB0))*(cB*(T/T0)*(T/T0)));
 	}
 
 	double S(double T, double muB, double muQ, double muS)
 	{
     double cp = c*T0*T0*T0*T0;  // c dimensionless, cp - 1/fm^4
-		return 4.0*cp*muS*muS*muS/(muS0*muS0*muS0*muS0);
+		return cp*(4.0*muS*muS*muS/(muS0*muS0*muS0*muS0) + (2.0*muS/(muS0*muS0))*(cS*(T/T0)*(T/T0)));
 	}
 
 	double Q(double T, double muB, double muQ, double muS)
 	{
     double cp = c*T0*T0*T0*T0;  // c dimensionless, cp - 1/fm^4
-		return 4.0*cp*muQ*muQ*muQ/(muQ0*muQ0*muQ0*muQ0);
+		return cp*(4.0*muQ*muQ*muQ/(muQ0*muQ0*muQ0*muQ0) + (2.0*muQ/(muQ0*muQ0))*(cQ*(T/T0)*(T/T0)));
 	}
 
 	double P2B2(double T, double muB, double muQ, double muS)
 	{
     double cp = c*T0*T0*T0*T0;  // c dimensionless, cp - 1/fm^4
-		return 12.0*cp*muB*muB/(muB0*muB0*muB0*muB0);
+		return cp*(12.0*muB*muB/(muB0*muB0*muB0*muB0)+ (2.0*cB*T*T)/(T0*T0*muB0*muB0));
 	}
 	double P2Q2(double T, double muB, double muQ, double muS)
 	{
     double cp = c*T0*T0*T0*T0;  // c dimensionless, cp - 1/fm^4
-		return 12.0*cp*muQ*muQ/(muQ0*muQ0*muQ0*muQ0);
+		return cp*(12.0*muQ*muQ/(muQ0*muQ0*muQ0*muQ0)+ (2.0*cQ*T*T)/(T0*T0*muQ0*muQ0));
 	}
 	double P2S2(double T, double muB, double muQ, double muS)
 	{
     double cp = c*T0*T0*T0*T0;  // c dimensionless, cp - 1/fm^4
-		return 12.0*cp*muS*muS/(muS0*muS0*muS0*muS0);
+		return cp*(12.0*muS*muS/(muS0*muS0*muS0*muS0)+ (2.0*cS*T*T)/(T0*T0*muS0*muS0));
 	}
 	
 	double P2BQ(double T, double muB, double muQ, double muS) { return TINY; }
 	double P2BS(double T, double muB, double muQ, double muS) { return TINY; }
 	double P2QS(double T, double muB, double muQ, double muS) { return TINY; }
 	
-	double P2TB(double T, double muB, double muQ, double muS) { return TINY; }
-	double P2TQ(double T, double muB, double muQ, double muS) { return TINY; }
-	double P2TS(double T, double muB, double muQ, double muS) { return TINY; }
+	double P2TB(double T, double muB, double muQ, double muS) 
+  {
+    double cp = c*T0*T0*T0*T0;  // c dimensionless, cp - 1/fm^4
+    return (cp*4.0*T*muB*cB)/(T0*T0*muB0*muB0); 
+  }
+	double P2TQ(double T, double muB, double muQ, double muS) 
+  { 
+    double cp = c*T0*T0*T0*T0;  // c dimensionless, cp - 1/fm^4
+    return (cp*4.0*T*muQ*cQ)/(T0*T0*muQ0*muQ0); 
+  }
+	double P2TS(double T, double muB, double muQ, double muS) 
+  { 
+    double cp = c*T0*T0*T0*T0;  // c dimensionless, cp - 1/fm^4
+    return (cp*4.0*T*muS*cS)/(T0*T0*muS0*muS0);
+  }
 
 	double P2T2(double T, double muB, double muQ, double muS)
 	{
     double cp = c*T0*T0*T0*T0;  // c dimensionless, cp - 1/fm^4
-		return 12.0*cp*T*T/(T0*T0*T0*T0);
+    double sum = cB*(muB/muB0)*(muB/muB0) 
+               + cS*(muS/muS0)*(muS/muS0) 
+               + cQ*(muQ/muQ0)*(muQ/muQ0);
+		return cp*(12.0*T*T/(T0*T0*T0*T0) + (2.0/(T0*T0))*sum);
 	}
 
   void get_eBSQ( double point[], double results[] )
