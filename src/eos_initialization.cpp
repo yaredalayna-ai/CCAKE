@@ -1,3 +1,4 @@
+
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -16,6 +17,7 @@
 #include "../include/eos_base.h"
 #include "../include/eos_conformal.h"
 #include "../include/eos_conformal_diagonal.h"
+#include "../include/eos_cd_modified.h"
 #include "../include/eos_header.h"
 #include "../include/eos_nonconformal_extension.h"
 #include "../include/eos_table.h"
@@ -322,8 +324,67 @@ void EquationOfState::set_up_chosen_EOSs()
 
     }
 
+    //==========================================================================
+    // updated diagonal conformal
+    //==========================================================================
+    if ( settingsPtr->EoS_type != "cd_modified" )
+    {
+      formatted_output::update("Setting diagonal conformal equation of state "
+                               "as final fallback");
+      formatted_output::detail("all coefficients matched to p/T^4 at grid limits");
 
+      // pointer to default EoS (first element added above)
+      pEoS_base p_default_EoS = chosen_EOSs.front();
 
+      // look up grid maxima (without any extensions)
+      std::vector<double> maxima = p_default_EoS->get_tbqs_maxima_no_ext();
+      double Tmax   = maxima[0];
+      double muBmax = maxima[1];
+      double muQmax = maxima[2];
+      double muSmax = maxima[3];
+
+      // set overall scale using (Tmax,0,0,0)
+      tbqs( Tmax, 0.0, 0.0, 0.0, p_default_EoS );
+      double pTmax = pVal;
+      double c  = pTmax / (Tmax*Tmax*Tmax*Tmax);
+
+      //const double hc = constants::hbarc_MeVfm;
+
+      // T-scale T0 = 1 by definition
+      double T0 = 1.0;
+
+      // set muB scale using (Tmax,muBmax,0,0)
+      tbqs( Tmax, muBmax, 0.0, 0.0, p_default_EoS );
+      //cout << pTmax << "   " << pVal << "   " << c << "   " << muBmax << endl;
+      double muB0 = pow( c/(pVal - pTmax), 0.25) * muBmax;
+
+      // set muQ scale using (Tmax,0,muQmax,0)
+      tbqs( Tmax, 0.0, muQmax, 0.0, p_default_EoS );
+      //cout << pTmax << "   " << pVal << "   " << c << "   " << muQmax << endl;
+      double muQ0 = pow( c/(pVal - pTmax), 0.25) * muQmax;
+
+      // set muS scale using (Tmax,0,0,muSmax)
+      tbqs( Tmax, 0.0, 0.0, muSmax, p_default_EoS );
+      //cout << pTmax << "   " << pVal << "   " << c << "   " << muSmax << endl;
+      double muS0 = pow( c/(pVal - pTmax), 0.25) * muSmax;
+
+      // set minima and maxima for rootfinder (can be arbitrarily large)
+      vector<double> tbqs_minima = { 0.0,          -TBQS_INFINITY, -TBQS_INFINITY, -TBQS_INFINITY };
+      vector<double> tbqs_maxima = { TBQS_INFINITY, TBQS_INFINITY,  TBQS_INFINITY,  TBQS_INFINITY };
+
+      formatted_output::detail("set up with following parameters:");
+      formatted_output::detail( "c    = " + to_string(c) );
+      formatted_output::detail( "T0   = " + to_string(T0) );
+      formatted_output::detail( "muB0 = " + to_string(muB0) );
+      formatted_output::detail( "muQ0 = " + to_string(muQ0) );
+      formatted_output::detail( "muS0 = " + to_string(muS0) );
+
+      // add matched conformal EoS to vector of EoSs
+      chosen_EOSs.push_back( std::make_shared<EoS_cd_modified>(
+                              c, T0, muB0, muS0, muQ0,
+                              tbqs_minima, tbqs_maxima, "cd_modified" ) );
+
+    }
 
 
 
