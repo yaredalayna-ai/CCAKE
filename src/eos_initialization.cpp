@@ -356,21 +356,30 @@ void EquationOfState::set_up_chosen_EOSs()
       // set muB scale using (Tmax,muBmax,0,0)
       tbqs( Tmax, muBmax, 0.0, 0.0, p_default_EoS );
       //cout << pTmax << "   " << pVal << "   " << c << "   " << muBmax << endl;
+      double pBmax = pVal;
       double muB0 = pow( c/(pVal - pTmax), 0.25) * muBmax;
 
       // set muQ scale using (Tmax,0,muQmax,0)
       tbqs( Tmax, 0.0, muQmax, 0.0, p_default_EoS );
       //cout << pTmax << "   " << pVal << "   " << c << "   " << muQmax << endl;
+      double pQmax = pVal;
       double muQ0 = pow( c/(pVal - pTmax), 0.25) * muQmax;
 
       // set muS scale using (Tmax,0,0,muSmax)
       tbqs( Tmax, 0.0, 0.0, muSmax, p_default_EoS );
       //cout << pTmax << "   " << pVal << "   " << c << "   " << muSmax << endl;
+      double pSmax = pVal;
       double muS0 = pow( c/(pVal - pTmax), 0.25) * muSmax;
 
       // set minima and maxima for rootfinder (can be arbitrarily large)
       vector<double> tbqs_minima = { 0.0,          -TBQS_INFINITY, -TBQS_INFINITY, -TBQS_INFINITY };
       vector<double> tbqs_maxima = { TBQS_INFINITY, TBQS_INFINITY,  TBQS_INFINITY,  TBQS_INFINITY };
+
+      // calculating and setting cB, cQ, cS values
+
+      double cB = (((pBmax - pTmax) * (muB0*muB0*muB0*muB0)) - (c*T0*T0*T0*T0*muBmax*muBmax*muBmax*muBmax))/(c*T0*T0*Tmax*Tmax*muB0*muB0*muBmax*muBmax);
+      double cQ = (((pQmax - pTmax) * (muQ0*muQ0*muQ0*muQ0)) - (c*T0*T0*T0*T0*muQmax*muQmax*muQmax*muQmax))/(c*T0*T0*Tmax*Tmax*muQ0*muQ0*muQmax*muQmax);
+      double cS = (((pSmax - pTmax) * (muS0*muS0*muS0*muS0)) - (c*T0*T0*T0*T0*muSmax*muSmax*muSmax*muSmax))/(c*T0*T0*Tmax*Tmax*muS0*muS0*muSmax*muSmax);
 
       formatted_output::detail("set up with following parameters:");
       formatted_output::detail( "c    = " + to_string(c) );
@@ -378,10 +387,13 @@ void EquationOfState::set_up_chosen_EOSs()
       formatted_output::detail( "muB0 = " + to_string(muB0) );
       formatted_output::detail( "muQ0 = " + to_string(muQ0) );
       formatted_output::detail( "muS0 = " + to_string(muS0) );
+      formatted_output::detail( "cB   = " + to_string(cB) );
+      formatted_output::detail( "cQ   = " + to_string(cQ) );  
+      formatted_output::detail( "cS   = " + to_string(cS) );
 
       // add matched conformal EoS to vector of EoSs
       chosen_EOSs.push_back( std::make_shared<EoS_cd_modified>(
-                              c, T0, muB0, muS0, muQ0,
+                              c, T0, muB0, muS0, muQ0, cB, cQ, cS,
                               tbqs_minima, tbqs_maxima, "cd_modified" ) );
 
     }
